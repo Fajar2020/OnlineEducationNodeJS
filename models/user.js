@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
+const { ObjectId } = Schema;
+
 const userSchema = new Schema({
     name:{
         type: String,
@@ -37,7 +39,8 @@ const userSchema = new Schema({
         default: "",
     },
     payment_seller: {},
-    paymentSession: {}
+    paymentSession: {},
+    courses: [{type: ObjectId, ref: "Course"}]
 },
 {
     timestamps: true

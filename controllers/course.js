@@ -1,9 +1,9 @@
 import slugify from "slugify";
 import fs from "fs";
 import Course from "../models/course";
+import User from "../models/user";
 
-
-
+// instructor
 export const create = async (req, res) => {
     try {
         const alreadyExists = await Course.findOne({
@@ -64,12 +64,18 @@ export const edit = async (req, res) => {
 
 export const read = async (req, res) => {
     try {
-        const course = await Course.findOne({slug: req.params.slug}).populate("instructor", "_id name").exec();
-        if (course && course.lessons) {
+        const course = await Course.findOne({slug: req.params.slug}).exec();
+        const users = await User.find({courses: course._id}).select("_id").exec();
+        if (!course) {
+            return res.sendStatus(400)
+        } else if (course.instructor != req.user._id) return res.sendStatus(403);
+
+        if (course.lessons) {
             course.lessons.forEach(element => {
                 if (element.video) element.video = process.env.HOST_URL+element.video.substring(1, element.video.length)
             });
         }
+        course.totalUsers = users.length;
         res.json(course);
     } catch (error) {
         return res.sendStatus(400)
@@ -187,6 +193,38 @@ export const editLesson = async (req, res) => {
         ).exec();
 
         res.json(await Course.findById(courseId).exec());
+    } catch (error) {
+        return res.sendStatus(400)
+    }
+}
+
+export const publishCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await Course.findById(courseId).exec();
+        if (!course) {
+            return res.sendStatus(400)
+        } else if (course.instructor != req.user._id) return res.sendStatus(403);
+
+        course.published = true;
+        course.save();
+        res.json(course);
+    } catch (error) {
+        return res.sendStatus(400)
+    }
+}
+
+export const unPublishCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await Course.findById(courseId).exec();
+        if (!course) {
+            return res.sendStatus(400)
+        } else if (course.instructor != req.user._id) return res.sendStatus(403);
+
+        course.published = false;
+        course.save();
+        res.json(course);
     } catch (error) {
         return res.sendStatus(400)
     }

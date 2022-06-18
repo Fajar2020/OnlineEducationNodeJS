@@ -21,7 +21,8 @@ const lessonSchema = new mongoose.Schema({
     free_preview: {
         type: Boolean,
         default: false
-    }
+    },
+    completed: Boolean
 }, { timestamps: true});
 
 const courseSchema = new mongoose.Schema({
@@ -60,7 +61,8 @@ const courseSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    lessons: [lessonSchema]
+    lessons: [lessonSchema],
+    totalUsers: Number
 }, { timestamps: true});
 
 export default mongoose.model("Course", courseSchema);
