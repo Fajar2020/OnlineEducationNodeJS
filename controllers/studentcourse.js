@@ -16,9 +16,8 @@ export const getCourses = async (req, res) => {
         }
 
         if (title) {
-            query = {...query, name:/.*${title}.*/}
+            query = {...query, name: { $regex: '.*' + title + '.*', $options: 'i' }}
         }
-        console.log(query);
         
         const courses = await Course.find(query).populate("instructor", "_id name").exec();
         if (courses.length) {
